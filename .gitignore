@@ -2,6 +2,7 @@
 Cargo.lock
 
 **/*.rs.bk
+**/node_modules/
 wasm-pack/Cargo.lock
 wasm-pack/bin/
 wasm-pack/pkg/

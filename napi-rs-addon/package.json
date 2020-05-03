@@ -1,0 +1,14 @@
+{
+  "name": "napi-rs-addon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "cargo build --release && napi --release"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "napi-rs": "^0.2.3"
+  }
+}
