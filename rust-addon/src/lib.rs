@@ -36,7 +36,7 @@ pub unsafe extern "C" fn napi_register_module_v1(
     exports: napi_value,
 ) -> nodejs_sys::napi_value {
 // creating a function name
-    let p = CString::new("myFunc").expect("CString::new failed");
+    let p = CString::new("add").expect("CString::new failed");
     let mut local: napi_value = std::mem::zeroed();
 // creating the function
     napi_create_function(
