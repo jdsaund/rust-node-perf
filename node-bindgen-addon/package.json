@@ -1,0 +1,11 @@
+{
+  "name": "bindgen-addon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "nj-cli build"
+  },
+  "author": "",
+  "license": "ISC"
+}
