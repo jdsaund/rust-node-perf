@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "cargo build --release && mv ./target/release/librust_addon.so ./index.node",
-    "install": "npm run build"
+    "postinstall": "cargo build --release && mv ./target/release/librust_addon.so ./index.node"
   },
   "author": "",
   "license": "ISC"
