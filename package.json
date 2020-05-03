@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "preinstall": "npm i --prefix ./napi-rs-addon && npm i --prefix ./neon && npm i --prefix ./node-bindgen-addon && npm i --prefix ./rust-addon && npm i --prefix ./wasm-pack"
   },
   "author": "",
   "license": "ISC"
