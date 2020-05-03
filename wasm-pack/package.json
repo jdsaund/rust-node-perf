@@ -1,0 +1,14 @@
+{
+  "name": "wasm-pack",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "postinstall": "wasm-pack build --target nodejs --release"
+  },
+  "author": "",
+  "license": "ISC"
+}
