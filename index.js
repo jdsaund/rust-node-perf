@@ -35,10 +35,10 @@ function add (a, b) {
 
 const jsTime = bench(add, 1)
 
-const results = { js: 1 }
+const results = [{ module: 'js', relativeTime: 1 }]
 
 for (const mod of Object.keys(modules)) {
-  results[mod] = bench(modules[mod].add, jsTime)
+  results.push({ module: mod, relativeTime: bench(modules[mod].add, jsTime) })
 }
 
-console.log(results)
+console.table(results)
