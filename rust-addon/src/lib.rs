@@ -38,9 +38,7 @@ use std::ffi::c_void;
 //     local
 // }
 
-pub unsafe extern "C" fn sumBuffer(env: napi_env, info: napi_callback_info) -> napi_value {
-    let mut null_mut = std::ptr::null_mut();
-
+pub unsafe extern "C" fn sum_u_32_array(env: napi_env, info: napi_callback_info) -> napi_value {
     // creating a buffer of arguments
     let mut buffer: [napi_value; 1] = std::mem::MaybeUninit::zeroed().assume_init();
     let mut argc = 1 as usize;
@@ -50,37 +48,34 @@ pub unsafe extern "C" fn sumBuffer(env: napi_env, info: napi_callback_info) -> n
         info,
         &mut argc,
         buffer.as_mut_ptr(),
-        null_mut,
-        null_mut,
+        std::ptr::null_mut(),
+        std::ptr::null_mut(),
     );
     let mut length: usize = 0;
-    let mut offset: usize = 0;
     let mut arr_type: napi_typedarray_type = std::mem::zeroed();
 
-    // getting length by passing null buffer
-    napi_get_typedarray_info(env, buffer[0], &mut arr_type, &mut length, null_mut, null_mut, &mut offset);
-    let size = length - offset;
-
-    assert_eq!(arr_type, napi_uint32_array);
-
     // creating a buffer where data can be placed
-    let mut ve: Vec<u32> = Vec::with_capacity(size);
+    let mut ve: Vec<u32> = Vec::new();
     let mut raw = ve.as_mut_ptr();
-    let mut_ref: &mut *mut u32 = &mut raw as *mut *mut _;
-    let raw_ptr: *mut *mut u32 = mut_ref as *mut *mut _;
+    let mut_ref: &mut *mut u32 = &mut raw;
+    let raw_ptr: *mut *mut _ = mut_ref as *mut *mut _;
 
-    // getting the raw data from napi_value
-    let _s = napi_get_typedarray_info(
+    let napi_val = buffer[0];
+
+    // getting length by passing null buffer
+    napi_get_typedarray_info(
         env,
-        buffer[0],
-        null_mut,
-        null_mut,
+        napi_val,
+        &mut arr_type,
+        &mut length,
         raw_ptr as *mut *mut c_void,
-        null_mut,
-        null_mut
+        std::ptr::null_mut(),
+        std::ptr::null_mut()
     );
-    // let _s = napi_get_typedarray_info(env, buffer[0], std::ptr::null_mut(), std::ptr::null_mut(), void_cast, std::ptr::null_mut(), std::ptr::null_mut());
-    let s: Vec<u32> = Vec::from_raw_parts(raw, size, size);
+
+    // assert_eq!(arr_type, napi_uint32_array);
+
+    let s: Vec<u32> = Vec::from_raw_parts(raw, length, length);
 
     // println!("hello {:?}", s);
 
@@ -156,30 +151,6 @@ pub unsafe extern "C" fn sumBuffer(env: napi_env, info: napi_callback_info) -> n
 //     local
 // }
 
-// #[no_mangle]
-// pub unsafe extern "C" fn napi_register_module_v1(
-//     env: napi_env,
-//     exports: napi_value,
-// ) -> nodejs_sys::napi_value {
-// // creating a function name
-//     let p = CString::new("add").expect("CString::new failed");
-//     let mut local: napi_value = std::mem::zeroed();
-// // creating the function
-//     napi_create_function(
-//         env,
-//         p.as_ptr(),
-//         5,
-//         Some(add),
-//         std::ptr::null_mut(),
-//         &mut local,
-//     );
-// // setting function as property
-//     napi_set_named_property(env, exports, p.as_ptr(), local);
-// // returning exports
-//     exports
-// }
-
-
 #[no_mangle]
 pub unsafe extern "C" fn napi_register_module_v1(
     env: napi_env,
@@ -191,7 +162,7 @@ pub unsafe extern "C" fn napi_register_module_v1(
         env,
         p.as_ptr(),
         5,
-        Some(sumBuffer),
+        Some(sum_u_32_array),
         std::ptr::null_mut(),
         &mut local,
     );

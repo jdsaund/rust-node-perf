@@ -5,9 +5,9 @@ const wasmPack = require('./wasm-pack/pkg')
 // const nodeBindgen = require('./node-bindgen-addon')
 
 const NS_PER_SEC = 1e9
-const NUM_ITERATIONS = 1000
+const NUM_ITERATIONS = 100000
 
-const arr = new Array(100000).fill(0).map((v, i) => 1)
+const arr = new Array(200).fill(0).map((v, i) => 1)
 const uint8Arr = new Uint32Array(arr)
 
 // const result = rustAddon.sumBuffer()
@@ -43,12 +43,12 @@ function sumBuffer (buf) {
   return result
 }
 
-const { relativeTime, result } = bench(sumBuffer, 1, uint8Arr)
+const { relativeTime: jsTime, result } = bench(sumBuffer, 1, uint8Arr)
 
-const results = [{ module: 'js', relativeTime, result }]
+const results = [{ module: 'js', relativeTime: 1, result }]
 
 for (const mod of Object.keys(modules)) {
-  results.push({ module: mod, ...bench(modules[mod].sumBuffer, relativeTime, uint8Arr) })
+  results.push({ module: mod, ...bench(modules[mod].sumBuffer, jsTime, uint8Arr) })
 }
 
 console.table(results)
