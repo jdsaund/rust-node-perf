@@ -52,3 +52,8 @@ for (const mod of Object.keys(modules)) {
 }
 
 console.table(results)
+
+
+/////////////////////
+
+rustAddon.printArray([1, 2, 4])

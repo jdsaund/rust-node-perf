@@ -5,7 +5,8 @@
 
 use nodejs_sys::{
     napi_callback_info, napi_create_function, napi_env, napi_get_cb_info, napi_get_undefined,
-    napi_get_buffer_info, napi_set_named_property, napi_value, napi_create_double, napi_get_typedarray_info
+    napi_get_buffer_info, napi_set_named_property, napi_value, napi_create_double, napi_get_typedarray_info,
+    napi_status, napi_get_element, napi_get_value_double, napi_get_array_length
 };
 use nodejs_sys::napi_typedarray_type;
 use nodejs_sys::napi_typedarray_type::napi_uint32_array;
@@ -52,16 +53,34 @@ pub unsafe extern "C" fn print_array(env: napi_env, info: napi_callback_info) ->
         std::ptr::null_mut(),
     );
 
+    // this is the array the was passed in
     let napi_val: napi_value = buffer[0];
-    let mut result: napi_value = std::mem::MaybeUninit::zeroed().assume_init();
 
-    let success: napi_status = napi_get_element(napi_env env,
+    // get length
+    let mut length: u32 = 0;
+    let get_length_success: napi_status = napi_get_array_length(
+        env,
         napi_val,
-        0,
-        result.as_mut_ptr()
+        &mut length as *mut u32
     );
 
-    println!("hello {:?}", result);
+    for i in 0..length {
+        // create pointer to get value
+        let mut result: [napi_value; 1] = std::mem::MaybeUninit::zeroed().assume_init();
+
+        let success: napi_status = napi_get_element(
+            env,
+            napi_val,
+            i,
+            result.as_mut_ptr()
+        );
+
+        // convert to a double
+        let mut val = 0 as f64;
+        napi_get_value_double(env, result[0], &mut val);
+
+        println!("arr[{}] {:?}", i, val);
+    }
 
     // sum the array contents
     let mut sum: u32 = 0;
@@ -192,16 +211,29 @@ pub unsafe extern "C" fn napi_register_module_v1(
     env: napi_env,
     exports: napi_value,
 ) -> nodejs_sys::napi_value {
-    let p = CString::new("sumBuffer").expect("CString::new failed");
-    let mut local: napi_value = std::mem::zeroed();
+    let p1 = CString::new("sumBuffer").expect("CString::new failed");
+    let p2 = CString::new("printArray").expect("CString::new failed");
+
+    let mut local1: napi_value = std::mem::zeroed();
+    let mut local2: napi_value = std::mem::zeroed();
+
     napi_create_function(
         env,
-        p.as_ptr(),
+        p1.as_ptr(),
         5,
         Some(sum_u_32_array),
         std::ptr::null_mut(),
-        &mut local,
+        &mut local1,
     );
-    napi_set_named_property(env, exports, p.as_ptr(), local);
+    napi_create_function(
+        env,
+        p2.as_ptr(),
+        5,
+        Some(print_array),
+        std::ptr::null_mut(),
+        &mut local2,
+    );
+    napi_set_named_property(env, exports, p1.as_ptr(), local1);
+    napi_set_named_property(env, exports, p2.as_ptr(), local2);
     exports
 }
