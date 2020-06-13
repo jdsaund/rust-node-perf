@@ -39,6 +39,28 @@ use std::ffi::c_void;
 //     local
 // }
 
+fn array_for_each (env: napi_env, napi_val: napi_value, func: fn(napi_env, usize, napi_value) -> ()) {
+    let mut length: u32 = 0;
+    let status: napi_status = unsafe { napi_get_array_length(env, napi_val, &mut length as *mut u32) };
+    assert_eq!(status, napi_status::napi_ok);
+
+    for i in 0..length {
+        // create pointer to get value
+        let mut result: [napi_value; 1] = unsafe { std::mem::MaybeUninit::zeroed().assume_init() };
+        let status: napi_status = unsafe { napi_get_element(env, napi_val, i, result.as_mut_ptr()) };
+        assert_eq!(status, napi_status::napi_ok);
+        func(env, i as usize, result[0]);
+    }
+}
+
+fn print_value (env: napi_env, i: usize, napi_val: napi_value) {
+    // convert to a double
+    let mut val = 0 as f64;
+    let status: napi_status = unsafe { napi_get_value_double(env, napi_val, &mut val) };
+    assert_eq!(status, napi_status::napi_ok);
+    println!("arr[{}] {:?}", i, val);
+}
+
 pub unsafe extern "C" fn print_array(env: napi_env, info: napi_callback_info) -> napi_value {
     // creating a buffer of arguments
     let mut buffer: [napi_value; 1] = std::mem::MaybeUninit::zeroed().assume_init();
@@ -54,46 +76,18 @@ pub unsafe extern "C" fn print_array(env: napi_env, info: napi_callback_info) ->
     );
 
     // this is the array the was passed in
-    let napi_val: napi_value = buffer[0];
+    let arr: napi_value = buffer[0];
 
-    // get length
-    let mut length: u32 = 0;
-    let get_length_success: napi_status = napi_get_array_length(
-        env,
-        napi_val,
-        &mut length as *mut u32
-    );
-
-    for i in 0..length {
-        // create pointer to get value
-        let mut result: [napi_value; 1] = std::mem::MaybeUninit::zeroed().assume_init();
-
-        let success: napi_status = napi_get_element(
-            env,
-            napi_val,
-            i,
-            result.as_mut_ptr()
-        );
-
-        // convert to a double
-        let mut val = 0 as f64;
-        napi_get_value_double(env, result[0], &mut val);
-
-        println!("arr[{}] {:?}", i, val);
-    }
-
-    // sum the array contents
-    let mut sum: u32 = 0;
+    array_for_each(env, arr, print_value);
 
     // creating the return value
     let mut local: napi_value = std::mem::zeroed();
-    napi_create_double(env, sum as f64, &mut local);
+    napi_get_undefined(env, &mut local);
 
-    // returning the result
     local
 }
 
-pub unsafe extern "C" fn sum_u_32_array(env: napi_env, info: napi_callback_info) -> napi_value {
+pub unsafe extern "C" fn sum_u32_array(env: napi_env, info: napi_callback_info) -> napi_value {
     // creating a buffer of arguments
     let mut buffer: [napi_value; 1] = std::mem::MaybeUninit::zeroed().assume_init();
     let mut argc = 1 as usize;
@@ -128,7 +122,7 @@ pub unsafe extern "C" fn sum_u_32_array(env: napi_env, info: napi_callback_info)
         std::ptr::null_mut()
     );
 
-    // assert_eq!(arr_type, napi_uint32_array);
+    assert_eq!(arr_type, napi_uint32_array);
 
     let s: Vec<u32> = Vec::from_raw_parts(raw, length, length);
 
@@ -221,7 +215,7 @@ pub unsafe extern "C" fn napi_register_module_v1(
         env,
         p1.as_ptr(),
         5,
-        Some(sum_u_32_array),
+        Some(sum_u32_array),
         std::ptr::null_mut(),
         &mut local1,
     );
