@@ -38,6 +38,42 @@ use std::ffi::c_void;
 //     local
 // }
 
+pub unsafe extern "C" fn print_array(env: napi_env, info: napi_callback_info) -> napi_value {
+    // creating a buffer of arguments
+    let mut buffer: [napi_value; 1] = std::mem::MaybeUninit::zeroed().assume_init();
+    let mut argc = 1 as usize;
+    // getting arguments
+    napi_get_cb_info(
+        env,
+        info,
+        &mut argc,
+        buffer.as_mut_ptr(),
+        std::ptr::null_mut(),
+        std::ptr::null_mut(),
+    );
+
+    let napi_val: napi_value = buffer[0];
+    let mut result: napi_value = std::mem::MaybeUninit::zeroed().assume_init();
+
+    let success: napi_status = napi_get_element(napi_env env,
+        napi_val,
+        0,
+        result.as_mut_ptr()
+    );
+
+    println!("hello {:?}", result);
+
+    // sum the array contents
+    let mut sum: u32 = 0;
+
+    // creating the return value
+    let mut local: napi_value = std::mem::zeroed();
+    napi_create_double(env, sum as f64, &mut local);
+
+    // returning the result
+    local
+}
+
 pub unsafe extern "C" fn sum_u_32_array(env: napi_env, info: napi_callback_info) -> napi_value {
     // creating a buffer of arguments
     let mut buffer: [napi_value; 1] = std::mem::MaybeUninit::zeroed().assume_init();
