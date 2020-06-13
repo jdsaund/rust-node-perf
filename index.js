@@ -57,3 +57,9 @@ console.table(results)
 /////////////////////
 
 rustAddon.printArray([1, 2, 4])
+console.log(rustAddon.sumBuffer2d([
+  uint8Arr,
+  uint8Arr,
+  uint8Arr,
+  uint8Arr
+]))
