@@ -6,12 +6,12 @@ pub fn add(a: f64, b: f64) -> f64 {
 }
 
 #[wasm_bindgen]
-pub fn sumBuffer(raw: &[u8]) -> f64 {
-    let mut sum: f64 = 0.0;
+pub fn sumBuffer(raw: &[u32]) -> f64 {
+    let mut sum: u32 = 0;
 
     for val in raw {
-        sum += *val as f64;
+        sum += *val;
     }
 
-    sum
+    sum as f64
 }
